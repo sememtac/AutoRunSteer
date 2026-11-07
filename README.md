@@ -17,7 +17,7 @@ It never changes your saved settings: while steering, it temporarily switches th
 ## Install
 
 - **CurseForge app:** coming soon.
-- **Manually:** download `AutoRunSteer-<version>.zip` from the
+- **Manually:** download `AutoRunSteer-<version>-forever.zip` from the
   [latest release](https://github.com/sememtac/AutoRunSteer/releases/latest) and extract it into
   `World of Warcraft\_forever_\Interface\AddOns\`, so you end up with
   `...\AddOns\AutoRunSteer\AutoRunSteer.toc`. Restart the game (a `/reload` doesn't pick up new addons).
