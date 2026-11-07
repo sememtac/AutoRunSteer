@@ -1,0 +1,6 @@
+package-as: AutoRunSteer
+
+manual-changelog: CHANGELOG.md
+
+ignore:
+  - README.md

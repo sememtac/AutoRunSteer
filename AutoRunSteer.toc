@@ -1,0 +1,10 @@
+## Interface: 16001
+## Title: AutoRunSteer
+## Notes: Hold the autorun button to steer the autorun with the camera stick.
+## Author: Catmemes
+## Version: @project-version@
+## SavedVariables: AutoRunSteerDB
+## X-License: MIT
+## X-Website: https://github.com/sememtac/AutoRunSteer
+
+AutoRunSteer.lua
