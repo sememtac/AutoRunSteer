@@ -4,7 +4,9 @@
 ## Author: Catmemes
 ## Version: @project-version@
 ## SavedVariables: AutoRunSteerDB
+## IconTexture: Interface\AddOns\AutoRunSteer\Icon
 ## X-License: MIT
 ## X-Website: https://github.com/sememtac/AutoRunSteer
+## X-Curse-Project-ID: 1790600
 
 AutoRunSteer.lua

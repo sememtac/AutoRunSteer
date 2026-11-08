@@ -1,5 +1,10 @@
 # AutoRunSteer
 
+## v1.2.1
+
+- New addon icon (shown in the in-game AddOns list).
+- Now available on CurseForge.
+
 ## v1.2.0
 
 First public release.

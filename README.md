@@ -16,7 +16,8 @@ It never changes your saved settings: while steering, it temporarily switches th
 
 ## Install
 
-- **CurseForge app:** coming soon.
+- **CurseForge app:** search for *Autorun Steer* with *World of Warcraft: Forever* selected, or open
+  [its CurseForge page](https://www.curseforge.com/wow/addons/autorun-steer).
 - **Manually:** download `AutoRunSteer-<version>-forever.zip` from the
   [latest release](https://github.com/sememtac/AutoRunSteer/releases/latest) and extract it into
   `World of Warcraft\_forever_\Interface\AddOns\`, so you end up with
