@@ -11,8 +11,13 @@ cancelling the run. AutoRunSteer adds a simple gesture for it:
   stick now steers it. You get a short controller rumble and an "Autorun steering on" message.
 - Steering ends by itself when the autorun does (you stop, toggle autorun off, or press forward/back).
 
-It never changes your saved settings: while steering, it temporarily switches the game's
-"Turn Player with Camera" option to "always" and puts it back the moment the autorun ends.
+It does the same while you cast: during a cast or channel the camera stick turns your character
+(turning doesn't interrupt a cast), and once the cast ends it only moves the camera again. The game's
+own "moving, combat or casting" option also turns you whenever you're in combat; this only does it
+during the cast. `/autorunsteer cast off` turns this part off.
+
+It never changes your saved settings: while steering or casting, it temporarily switches the game's
+"Turn Player with Camera" option to "always" and puts it back the moment the autorun or cast ends.
 
 ## Install
 
@@ -30,8 +35,9 @@ It never changes your saved settings: while steering, it temporarily switches th
 | `/autorunsteer` | Turn the addon on/off |
 | `/autorunsteer on` / `off` | Turn it on or off |
 | `/autorunsteer hold 0.8` | How long to hold the button before steering kicks in (0.2 – 2 seconds, default 0.5) |
+| `/autorunsteer cast` | Turn casting with the camera stick on/off (`cast on` / `cast off`; on by default) |
 | `/autorunsteer status` | Show the current state and which button it sees bound to autorun |
-| `/autorunsteer debug` | Print what happens on each autorun press (for troubleshooting) |
+| `/autorunsteer debug` | Print what happens on each autorun press and cast (for troubleshooting) |
 
 ## Works best with
 

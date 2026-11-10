@@ -1,5 +1,10 @@
 # AutoRunSteer
 
+## v1.3.0
+
+- The camera stick now turns your character while you cast or channel, and goes back to only moving
+  the camera when the cast ends. `/autorunsteer cast on|off` turns this on or off (on by default).
+
 ## v1.2.1
 
 - New addon icon (shown in the in-game AddOns list).

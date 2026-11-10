@@ -2,7 +2,8 @@
 -- The gamepad "Turn Player with Camera" setting doesn't treat autorun as moving, so the camera
 -- stick can't steer an autorun. Keep holding the autorun button for a moment after starting
 -- autorun to switch that setting to "always" until the autorun ends; a quick tap is a plain
--- autorun. The temp value never touches the saved setting.
+-- autorun. The same override is held while you cast or channel, so the camera stick turns the
+-- character mid-cast. The temp value never touches the saved setting.
 
 local ADDON_NAME = ...;
 
@@ -22,6 +23,7 @@ local PAD_KEYS = {
 };
 
 local isSteering = false;
+local isCasting = false;
 local isOverriding = false;
 local canOverride = false;
 
@@ -43,12 +45,16 @@ local function IsEnabled()
 	return AutoRunSteerDB == nil or AutoRunSteerDB.enabled ~= false;
 end
 
+local function IsCastTurnEnabled()
+	return AutoRunSteerDB == nil or AutoRunSteerDB.castTurn ~= false;
+end
+
 local function GetHoldTime()
 	return (AutoRunSteerDB and AutoRunSteerDB.holdTime) or DEFAULT_HOLD_TIME;
 end
 
 local function UpdateOverride()
-	local shouldOverride = canOverride and isSteering and IsEnabled();
+	local shouldOverride = canOverride and IsEnabled() and (isSteering or (isCasting and IsCastTurnEnabled()));
 	if shouldOverride == isOverriding then
 		return;
 	end
@@ -187,6 +193,37 @@ local function OnStartedMoving()
 	end
 end
 
+-- Turning doesn't interrupt a cast, so hold the override for as long as one runs. A cast start
+-- turns it on; the cast info going away catches every way a cast ends (empowered spells are
+-- channels).
+local CAST_START_EVENTS = { "UNIT_SPELLCAST_START", "UNIT_SPELLCAST_CHANNEL_START", "UNIT_SPELLCAST_EMPOWER_START" };
+
+local function IsPlayerCasting()
+	return UnitCastingInfo("player") ~= nil or UnitChannelInfo("player") ~= nil;
+end
+
+local castWatcher = CreateFrame("Frame");
+castWatcher:Hide();
+castWatcher:SetScript("OnUpdate", function(self)
+	if not IsPlayerCasting() then
+		self:Hide();
+		isCasting = false;
+		UpdateOverride();
+		Debug("cast ended");
+	end
+end);
+castWatcher:SetScript("OnEvent", function(self)
+	isCasting = true;
+	UpdateOverride();
+	self:Show();
+	Debug(("cast started - turning with camera=%s"):format(tostring(isOverriding)));
+end);
+for _, event in ipairs(CAST_START_EVENTS) do
+	if not C_EventUtils or C_EventUtils.IsEventValid(event) then
+		castWatcher:RegisterUnitEvent(event, "player");
+	end
+end
+
 local frame = CreateFrame("Frame");
 frame:RegisterEvent("ADDON_LOADED");
 frame:RegisterEvent("PLAYER_LOGIN");
@@ -203,7 +240,7 @@ frame:SetScript("OnEvent", function(self, event, ...)
 		local value, _, _, _, _, isSecure = C_CVar.GetCVarInfo(CVAR);
 		canOverride = value ~= nil and not isSecure and C_CVar.SetTempCVar ~= nil;
 		if not canOverride then
-			Print("can't override " .. CVAR .. " on this client, so autorun steering is unavailable.");
+			Print("can't override " .. CVAR .. " on this client, so steering with the camera stick is unavailable.");
 		end
 	elseif event == "PLAYER_STARTED_MOVING" then
 		OnStartedMoving();
@@ -211,6 +248,9 @@ frame:SetScript("OnEvent", function(self, event, ...)
 		-- Steering lasts until the character stops; loading screens and logout end it too.
 		if event == "PLAYER_STOPPED_MOVING" and isSteering then
 			Debug("stopped moving - steering off");
+		end
+		if event == "PLAYER_LOGOUT" then
+			isCasting = false;
 		end
 		SetSteering(false);
 	end
@@ -220,6 +260,7 @@ SLASH_AUTORUNSTEER1 = "/autorunsteer";
 SlashCmdList.AUTORUNSTEER = function(msg)
 	msg = strtrim(msg or ""):lower();
 	local holdArg = msg:match("^hold%s+([%d%.]+)$");
+	local castArg = msg:match("^cast%s+(%a+)$") or (msg == "cast" and "");
 	if holdArg then
 		local seconds = tonumber(holdArg);
 		if not seconds or seconds < MIN_HOLD_TIME or seconds > MAX_HOLD_TIME then
@@ -228,6 +269,14 @@ SlashCmdList.AUTORUNSTEER = function(msg)
 		end
 		AutoRunSteerDB.holdTime = seconds;
 		Print(("hold the autorun button %.1f seconds to steer."):format(seconds));
+	elseif castArg == "" or castArg == "on" or castArg == "off" then
+		if castArg == "" then
+			AutoRunSteerDB.castTurn = not IsCastTurnEnabled();
+		else
+			AutoRunSteerDB.castTurn = (castArg == "on");
+		end
+		UpdateOverride();
+		Print(IsCastTurnEnabled() and "the camera stick turns your character while you cast." or "casting no longer turns your character with the camera stick.");
 	elseif msg == "debug" then
 		AutoRunSteerDB.debug = not AutoRunSteerDB.debug;
 		Print("debug output " .. (AutoRunSteerDB.debug and "on" or "off") .. ".");
@@ -240,7 +289,8 @@ SlashCmdList.AUTORUNSTEER = function(msg)
 		UpdateOverride();
 		Print(IsEnabled() and ("on - hold the autorun button %.1f seconds to steer with the camera stick."):format(GetHoldTime()) or "off.");
 	else
-		Print(("enabled=%s, holdTime=%.1f, steering=%s, %s=%s, autorun keys=[%s]"):format(tostring(IsEnabled()), GetHoldTime(),
-			tostring(isOverriding), CVAR, tostring(C_CVar.GetCVar(CVAR)), table.concat(GetAutorunKeys(), ",")));
+		Print(("enabled=%s, holdTime=%.1f, castTurn=%s, casting=%s, steering=%s, %s=%s, autorun keys=[%s]"):format(tostring(IsEnabled()),
+			GetHoldTime(), tostring(IsCastTurnEnabled()), tostring(isCasting), tostring(isOverriding), CVAR, tostring(C_CVar.GetCVar(CVAR)),
+			table.concat(GetAutorunKeys(), ",")));
 	end
 end;
